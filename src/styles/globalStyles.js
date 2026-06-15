@@ -1,6 +1,6 @@
-import T from "./theme";
+import { T } from "./theme";
 
-const css = `
+export const css = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', sans-serif; background: ${T.offWhite}; color: ${T.gray700}; }
