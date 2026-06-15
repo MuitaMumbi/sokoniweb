@@ -1,0 +1,15 @@
+export const T = {
+    blue:       "#0A2E6E",
+  blueMid:    "#1A4DB8",
+  blueLight:  "#2B6BE0",
+  yellow:     "#F5C800",
+  yellowDark: "#D4A900",
+  white:      "#FFFFFF",
+  offWhite:   "#F4F7FF",
+  gray100:    "#EEF1F8",
+  gray300:    "#C8CFE0",
+  gray500:    "#7A85A0",
+  gray700:    "#3D4560",
+  danger:     "#D93025",
+  success:    "#1A7A4A",
+}
