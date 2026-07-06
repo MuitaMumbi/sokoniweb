@@ -1,5 +1,6 @@
 import { API_BASE } from "./api/config";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { fetchCategories } from "./api/product";
 import {
 	BrowserRouter,
 	Routes,
@@ -22,8 +23,23 @@ import DashboardPage from "./pages/DashboardPage";
 import AuthModal from "./auth/AuthModal";
 import AdminPage from "./pages/AdminPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import SupplierLayout from "./pages/supplier/SupplierLayout";
+import SupplierDashboard from "./pages/supplier/SupplierDashboard";
+import SupplierProfile from "./pages/supplier/SupplierProfile";
+import SupplierProducts from "./pages/supplier/SupplierProducts";
+import SupplierInventory from "./pages/supplier/SupplierInventory";
+import SupplierOrders from "./pages/supplier/SupplierOrders";
+import SupplierShipments from "./pages/supplier/SupplierShipments";
+import SupplierNotifications from "./pages/supplier/SupplierNotifications";
 
-// ─── INNER APP (has access to router hooks) ───────────────────────────────────
+import RetailerLayout from "./pages/retailer/RetailerLayout";
+import RetailerOrders from "./pages/retailer/RetailerOrders";
+import RetailerOrderDetail from "./pages/retailer/RetailerOrderDetail";
+import RetailerLoyalty from "./pages/retailer/RetailerLoyalty";
+import RetailerProfile from "./pages/retailer/RetailerProfile";
+
+import CheckoutPage from "./pages/CheckoutPage";
+// INNER APP (has access to router hooks)
 function InnerApp() {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -38,6 +54,14 @@ function InnerApp() {
 	const [loggingOut, setLoggingOut] = useState(false);
 
 	const [categories, setCategories] = useState([]);
+	const authFetched = useRef(false);
+
+	const isSupplierPortal = location.pathname.startsWith("/supplier");
+
+	const isRetailerPortal =
+		location.pathname.startsWith("/retailer") ||
+		location.pathname === "/dashboard";
+		location.pathname === "/checkout";
 
 	function showToast(msg, type = "success") {
 		setToast({ msg, type });
@@ -53,24 +77,6 @@ function InnerApp() {
 	}, [user, location.pathname, authChecked]);
 
 	useEffect(() => {
-		const token = localStorage.getItem("sokoni_token");
-		if (!token) {
-			setAuthChecked(true);
-			return;
-		}
-
-		fetch(`${API_BASE}/auth/me`, {
-			headers: { Authorization: `Bearer ${token}` },
-		})
-			.then(res => res.ok ? res.json() : Promise.reject())
-			.then(data => setUser(data.user))
-			.catch(() => {
-				localStorage.removeItem("sokoni_token");
-			})
-			.finally(() => setAuthChecked(true));
-	}, []);
-
-	useEffect(() => {
 		fetchCategories().then(data => {
 			if (data) setCategories([
 				{ category_id: "all", name: "All", slug: "all" },
@@ -79,11 +85,28 @@ function InnerApp() {
 		});
 	}, []);
 
+	useEffect(() => {
+		if (authFetched.current) return;
+		authFetched.current = true;
+		
+		const token = localStorage.getItem("sokoni_token");
+		if (!token) { setAuthChecked(true); return; }
+
+		fetch(`${API_BASE}/auth/me`, {
+			headers: { Authorization: `Bearer ${token}` },
+		})
+			.then(res => res.ok ? res.json() : Promise.reject())
+			.then(data => setUser(data.user))
+			.catch(() => localStorage.removeItem("sokoni_token"))
+			.finally(() => setAuthChecked(true));
+	}, []);
+
 	function handleSetUser(u) {
     // console.log("handleSetUser called with:", u);
     setUser(u);
     if (!u) { navigate("/"); return; }
     if (u.role === "admin") navigate("/admin");
+    else if (u.role === "supplier") navigate("/supplier/dashboard");
     else navigate("/dashboard");
 }
 
@@ -115,26 +138,61 @@ function InnerApp() {
 		showToast("Signed out successfully", "success");
 		setLoggingOut(false);
 	}
+
+	function SupplierGuard({ user, authChecked, onLogout, loggingOut, children }) {
+		const navigate = useNavigate();
+		if (!authChecked) { return (<div style={{ textAlign: "center", padding: 80 }}>Loading...</div>);}
+		if (!user || user.role !== "supplier") {
+			navigate("/");
+			return null;
+		}
+		return (
+			<SupplierLayout user={user} onLogout={onLogout} loggingOut={loggingOut}>
+				{children}
+			</SupplierLayout>
+    	);
+	}
+
+	function RetailerGuard({ user, authChecked, onLogout, loggingOut, children }) {
+		const navigate = useNavigate();
+		if (!authChecked) return <Spinner fullPage text="Checking session..." />;
+		if (!user || !["retailer", "customer"].includes(user.role)) {
+			navigate("/");
+			return null;
+		}
+		return (
+			<RetailerLayout user={user} onLogout={onLogout} loggingOut={loggingOut}>
+				{children}
+			</RetailerLayout>
+		);
+	}
+
 	return (
 		<>
 			{/* Inject all global CSS into the page */}
 			<style>{css}</style>
 
-			<Navbar
-				activePath={location.pathname}
-				onNav={navigate}
-				setModalOpen={setModalOpen}
-				cartCount={cart.length}
-				setCartOpen={setCartOpen}
-				user={user}
-				setUser={handleSetUser}
-				authChecked={authChecked}
-				onLogout={handleLogout}
-				loggingOut={loggingOut}
-			/>
+			{!isSupplierPortal && (
+				<Navbar
+					activePath={location.pathname}
+					onNav={navigate}
+					setModalOpen={setModalOpen}
+					cartCount={cart.length}
+					setCartOpen={setCartOpen}
+					user={user}
+					setUser={handleSetUser}
+					authChecked={authChecked}
+					onLogout={handleLogout}
+					loggingOut={loggingOut}
+				/>
+			)}
 
-			{!location.pathname.startsWith("/admin") && (
-				<CategoryBar activeCat={activeCat} setActiveCat={handleCatClick} categories={categories}/>
+			{!isSupplierPortal && !isRetailerPortal && !location.pathname.startsWith("/admin") && (
+				<CategoryBar
+					activeCat={activeCat}
+					setActiveCat={handleCatClick}
+					categories={categories}
+				/>
 			)}
 
 			<Routes>
@@ -164,18 +222,37 @@ function InnerApp() {
 						/>
 					}
 				/>
-				<Route
-					path="/dashboard"
-					element={
-						!authChecked ? (
-							<div style={{ textAlign: "center", padding: 80, color: "#0A2E6E" }}>
-								Loading...
-							</div>
-						) : user ? (
-							<DashboardPage user={user} />
-						) : null
-					}
-				/>
+
+				<Route path="/dashboard" element={
+					<RetailerGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<DashboardPage user={user} />
+					</RetailerGuard>
+				} />
+
+				<Route path="/retailer/orders" element={
+					<RetailerGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<RetailerOrders />
+					</RetailerGuard>
+				} />
+
+				<Route path="/retailer/orders/:id" element={
+					<RetailerGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<RetailerOrderDetail />
+					</RetailerGuard>
+				} />
+
+				<Route path="/retailer/loyalty" element={
+					<RetailerGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<RetailerLoyalty />
+					</RetailerGuard>
+				} />
+
+				<Route path="/retailer/profile" element={
+					<RetailerGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<RetailerProfile user={user} setUser={handleSetUser} />
+					</RetailerGuard>
+				} />
+
 				<Route
 					path="/admin"
 					element={
@@ -193,9 +270,69 @@ function InnerApp() {
     				element={<ResetPasswordPage setUser={handleSetUser} />}
 				/>
 
+				<Route path="/supplier/dashboard" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierDashboard />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/profile" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierProfile />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/products" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierProducts />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/inventory" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierInventory />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/orders" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierOrders />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/shipments" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierShipments />
+					</SupplierGuard>
+				} />
+
+				<Route path="/supplier/notifications" element={
+					<SupplierGuard user={user} authChecked={authChecked} onLogout={handleLogout} loggingOut={loggingOut}>
+						<SupplierNotifications />
+					</SupplierGuard>
+				} />
+
+				<Route path="/checkout" element={
+					user ? (
+						<CheckoutPage
+							user={user}
+							cart={cart}
+							setCart={setCart}
+							showToast={showToast}
+						/>
+					) : (
+						<HomePage
+							user={user}
+							setModalOpen={setModalOpen}
+							cart={cart}
+							setCart={setCart}
+							showToast={showToast}
+						/>
+					)
+				} />
 			</Routes>
 
-			<Footer />
+			{!isSupplierPortal && !isRetailerPortal && <Footer />}
 
 			{modalOpen && (
 				<AuthModal
@@ -206,26 +343,29 @@ function InnerApp() {
 			)}
 
 			{/* Cart overlay backdrop */}
-			{cartOpen && (
-				<div
-					style={{
-						position: "fixed",
-						inset: 0,
-						background: "rgba(10,46,110,0.4)",
-						zIndex: 290,
-						backdropFilter: "blur(2px)",
-					}}
-					onClick={() => setCartOpen(false)}
-				/>
+			{!isSupplierPortal && !isRetailerPortal && (
+				<>
+					{cartOpen && (
+						<div
+							style={{
+								position: "fixed", inset: 0,
+								background: "rgba(10,46,110,0.4)",
+								zIndex: 290, backdropFilter: "blur(2px)",
+							}}
+							onClick={() => setCartOpen(false)}
+						/>
+					)}
+					<CartSidebar
+						open={cartOpen}
+						setOpen={setCartOpen}
+						cart={cart}
+						setCart={setCart}
+						showToast={showToast}
+						user={user}
+						setModalOpen={setModalOpen}
+					/>
+				</>
 			)}
-
-			<CartSidebar
-				open={cartOpen}
-				setOpen={setCartOpen}
-				cart={cart}
-				setCart={setCart}
-				showToast={showToast}
-			/>
 
 			<Toast toast={toast} />
 		</>

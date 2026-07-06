@@ -55,3 +55,18 @@ export async function fetchLoyaltyPoints(onExpired) {
     if (!res) return null;
     return res.json();
 }
+
+export async function stkPush(order_id, phone, onExpired) {
+    const res = await apiFetch(`${API_BASE}/mpesa/stk-push`, {
+        method: "POST",
+        body: JSON.stringify({ order_id, phone }),
+    }, onExpired);
+    if (!res) return null;
+    return res.json();
+}
+
+export async function pollOrderStatus(order_id, onExpired) {
+    const res = await apiFetch(`${API_BASE}/mpesa/order-status/${order_id}`, {}, onExpired);
+    if (!res) return null;
+    return res.json();
+}

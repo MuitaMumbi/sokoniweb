@@ -29,13 +29,13 @@ export default function Navbar({
           SOKONI<span>B2B</span>
         </div>
 
-        {/* SEARCH — hide on admin page too, optional but cleaner */}
+        {/* SEARCH — hide on admin page too, optional but cleaner
         {!isAdminPage && (
           <div className="nav-search">
             <span className="nav-search-icon">🔍</span>
             <input placeholder="Search products, brands, categories..." />
           </div>
-        )}
+        )} */}
 
         {/* LINKS */}
         <div className="nav-links">
