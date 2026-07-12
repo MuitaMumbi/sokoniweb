@@ -246,3 +246,53 @@ export const css = `
     .nav-mobile-link.active { color: ${T.yellow}; }
   }
 `;
+
+/* Mobile responsive fixes */
+`@media (max-width: 768px) {
+    .hero-inner {
+        flex-direction: column !important;
+        padding: 32px 20px !important;
+    }
+    .hero-title {
+        font-size: 32px !important;
+    }
+    .hero-graphic {
+        display: none !important;
+    }
+    .hero-stats {
+        gap: 20px !important;
+    }
+    .main-layout {
+        padding: 0 16px !important;
+    }
+    .products-page {
+        padding: 16px !important;
+    }
+    .product-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    .filters-bar {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    .trust-bar-inner {
+        gap: 16px !important;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+    }
+    .footer-bottom {
+        flex-direction: column !important;
+        gap: 12px !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+`;
