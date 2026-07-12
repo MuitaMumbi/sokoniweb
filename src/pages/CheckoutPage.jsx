@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { T } from "../styles/theme";
 import Spinner from "../components/Spinner";
 import { placeOrder, stkPush, pollOrderStatus } from "../api/retailer";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function CheckoutPage({ user, cart, setCart, showToast }) {
+    const isMobile = useIsMobile();
     const navigate = useNavigate();
     const [step, setStep] = useState("details"); // details | payment | polling | success
     const [placingOrder, setPlacingOrder] = useState(false);
@@ -236,7 +238,7 @@ export default function CheckoutPage({ user, cart, setCart, showToast }) {
             {(step === "details" || step === "payment") && (
                 <div style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 380px",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 380px",
                     gap: 24, alignItems: "start",
                 }}>
                     {/* Left — form */}
