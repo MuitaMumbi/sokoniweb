@@ -49,9 +49,21 @@ export default function RetailerLayout({ user, onLogout, loggingOut, children })
                 </div>
 
                 {mobileMenuOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        onClick={() => setMobileMenuOpen(false)}
+                        style={{
+                            position: "fixed",
+                            inset: 0,
+                            zIndex: 9998,
+                            background: "rgba(0,0,0,0.3)",
+                        }}
+                    />
+                    {/* Menu */}
                     <div style={{
                         background: T.blue, padding: "8px 0",
-                        position: "sticky", top: 49, zIndex: 99,
+                        position: "fixed", top: 49, left: 0, right: 0, zIndex: 9999,
                         boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
                     }}>
                         {NAV.map(({ path, icon, label }) => {
@@ -95,16 +107,18 @@ export default function RetailerLayout({ user, onLogout, loggingOut, children })
                             </button>
                         </div>
                     </div>
+                    </>
                 )}
 
                 <div style={{ flex: 1, padding: 16, overflowY: "auto" }}>
                     {children}
                 </div>
             </div>
+            
         );
     }
 
-    // Desktop
+    {/* // Desktop */}
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f4f6fb" }}>
             <div style={{

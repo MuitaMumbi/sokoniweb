@@ -235,24 +235,40 @@ export default function AdminPage({ user, showToast }) {
 
     // ── MOBILE TOP BAR ──
     const MobileBar = () => (
-        <>
-            <div style={{
-                background: "#0A2E6E", padding: "12px 16px",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                position: "sticky", top: 0, zIndex: 100,
-            }}>
-                <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 900, fontSize: 16, color: "#fff" }}>
-                    SOKONI<span style={{ color: "#F5C518" }}>ADMIN</span>
-                </div>
-                <button
-                    onClick={() => setMobileMenuOpen(o => !o)}
-                    style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "white", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 20 }}
-                >
-                    {mobileMenuOpen ? "✕" : "☰"}
-                </button>
+    <>
+        <div style={{
+            background: "#0A2E6E", padding: "12px 16px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            position: "sticky", top: 0, zIndex: 100,
+        }}>
+            <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 900, fontSize: 16, color: "#fff" }}>
+                SOKONI<span style={{ color: "#F5C518" }}>ADMIN</span>
             </div>
-            {mobileMenuOpen && (
-                <div style={{ background: "#0A2E6E", position: "sticky", top: 49, zIndex: 99, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+            <button
+                onClick={() => setMobileMenuOpen(o => !o)}
+                style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "white", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 20 }}
+            >
+                {mobileMenuOpen ? "✕" : "☰"}
+            </button>
+        </div>
+
+        {mobileMenuOpen && (
+            <>
+                <div
+                    onClick={() => setMobileMenuOpen(false)}
+                    style={{
+                        position: "fixed", inset: 0,
+                        zIndex: 9998,
+                        background: "rgba(0,0,0,0.3)",
+                    }}
+                />
+                <div style={{
+                    background: "#0A2E6E",
+                    position: "fixed",
+                    top: 49, left: 0, right: 0,
+                    zIndex: 9999,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                }}>
                     {NAV_ITEMS.map(item => (
                         <div
                             key={item.id}
@@ -276,9 +292,10 @@ export default function AdminPage({ user, showToast }) {
                         <div style={{ color: "#94A3B8", fontSize: 13 }}>{user.username} · Admin</div>
                     </div>
                 </div>
-            )}
-        </>
-    );
+            </>
+        )}
+    </>
+);
 
     const mainContent = (
         <main style={{ ...S.main, padding: isMobile ? "16px" : "32px 36px" }}>
